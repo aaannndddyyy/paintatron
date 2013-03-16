@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>447</width>
-    <height>362</height>
+    <width>682</width>
+    <height>370</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -197,7 +197,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>447</width>
+     <width>682</width>
      <height>18</height>
     </rect>
    </property>
@@ -206,6 +206,7 @@
      <string>File</string>
     </property>
     <addaction name="actionSave"/>
+    <addaction name="actionLoadImage"/>
     <addaction name="actionExit"/>
    </widget>
    <addaction name="menuFile"/>
@@ -232,6 +233,11 @@
   <action name="actionExit">
    <property name="text">
     <string>Exit</string>
+   </property>
+  </action>
+  <action name="actionLoadImage">
+   <property name="text">
+    <string>Load Source Image</string>
    </property>
   </action>
  </widget>

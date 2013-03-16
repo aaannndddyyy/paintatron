@@ -15,7 +15,8 @@
 #define MAKE_DIR        "mkdir"
 #define COPY_FILE       "cp"
 
-#define NO_OF_IMAGES 16
+#define NO_OF_IMAGES      16
+#define MAX_SOURCE_IMAGES 128
 
 namespace Ui {
 class MainWindow;
@@ -33,17 +34,24 @@ private:
     paintatron * painter;
     int selected_preview_index;
     QString dataDirectory;
+    int no_of_source_images;
+    bool reloadSourceImages;
 
     bool eventFilter(QObject *obj, QEvent *event);
     void selectPreviewImage(int index);
+    void reloadSources();
+    void detectSourceImages();
+    bool fileExists(QString filename);
 
     unsigned char * full_img;
     int full_img_width, full_img_height;
 
 public slots:
     int saveImageAs();
+    int loadSourceImage();
 
 public:
+    QImage * source;
     QImage image[NO_OF_IMAGES+1];
     QGraphicsPixmapItem * image_item[NO_OF_IMAGES+1];
     QGraphicsScene * image_scene[NO_OF_IMAGES+1];

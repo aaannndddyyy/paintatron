@@ -4,21 +4,21 @@ paintatron::paintatron(int population)
 {
     int i;
 
+    sensors = 5, actuators = 6;
     this->population = population;
     run_steps = 1;
     rows = 6;
-    columns = 24;
+    columns = 16;
     connections_per_gene = 3;
     modules = 0;
     chromosomes=1;
     min_value = -100;
     max_value = 100;
     elitism = 1.0f / population;
-    mutation_prob = 0.2f;
+    mutation_prob = 0.4f;
     use_crossover = 1;
     dropout_rate = 0.1f;
     random_seed = (unsigned int)time(NULL);
-    sensors = 5, actuators = 3;
     integers_only = 0;
     sensor_names = (char**)malloc(sensors*sizeof(char*));
     for (i = 0; i < sensors; i++) {
@@ -68,9 +68,12 @@ paintatron::~paintatron()
 void paintatron::produce_art(int index,
                              unsigned char * img,
                              int img_width, int img_height,
+                             QImage * source_images,
+                             int no_of_sources,
                              char * filename)
 {
-    int x,y,n=0,itt,c;
+    int x,y,n=0,itt,c, source_x, source_y, source_index,R,G,B;
+    float offset_x, offset_y;
     gprcm_population * pop = &sys.island[0];
     gprcm_function * f = &pop->individual[index];
 
@@ -82,17 +85,48 @@ void paintatron::produce_art(int index,
     /* for every image pixel */
     for (y = 0; y < img_height; y++) {
         for (x = 0; x < img_width; x++, n+=3) {
+            if (no_of_sources > 0) {
+                /* source image to use */
+                source_index =
+                            (int)(fmod(fabs(gprcm_get_actuator(f, 3,
+                                                                pop->rows,
+                                                                pop->columns,
+                                                                pop->sensors)),1.0f)*no_of_sources);
+
+                if ((source_images[source_index].width() > 0) &&
+                    (source_images[source_index].height() > 0)) {
+
+                    offset_x =
+                        fmod(fabs(gprcm_get_actuator(f, 4,
+                                                     pop->rows,
+                                                     pop->columns,
+                                                     pop->sensors)),2.0f)-1.0f;
+                    offset_y =
+                        fmod(fabs(gprcm_get_actuator(f, 5,
+                                                     pop->rows,
+                                                     pop->columns,
+                                                     pop->sensors)),2.0f)-1.0f;
+
+                    source_x = abs(x*(int)(source_images[source_index].width()*offset_x)/img_width) % source_images[source_index].width();
+                    source_y = abs(y*(int)(source_images[source_index].height()*offset_y)/img_height) % source_images[source_index].height();
+
+                    /* get the colour at this location */
+                    QColor col = QColor::fromRgb (source_images[source_index].pixel(source_x,source_y));
+                    col.getRgb(&R,&G,&B);
+
+                    /* set sensors to the colour values */
+                    gprcm_set_sensor(f, 2, R/255.0f);
+                    gprcm_set_sensor(f, 3, G/255.0f);
+                    gprcm_set_sensor(f, 4, B/255.0f);
+                }
+            }
+
+
             gprcm_set_sensor(f, 0,
                              (x*2/(float)img_width)-0.5f);
 
             gprcm_set_sensor(f, 1,
                              (y*2/(float)img_height)-0.5f);
-
-            if (n > 0) {
-                gprcm_set_sensor(f, 2, img[n - 3]);
-                gprcm_set_sensor(f, 3, img[n + 1 - 3]);
-                gprcm_set_sensor(f, 4, img[n + 2 - 3]);
-            }
 
             for (itt = 0; itt < run_steps; itt++) {
                 /* run the program */
@@ -112,7 +146,9 @@ void paintatron::produce_art(int index,
 }
 
 /* produce an artwork for each individual in the population */
-void paintatron::produce_population_art(char * data_directory)
+void paintatron::produce_population_art(char * data_directory,
+                                        QImage * source_images,
+                                        int no_of_sources)
 {
     int index;
     char filename[256];
@@ -122,6 +158,7 @@ void paintatron::produce_population_art(char * data_directory)
         sprintf(filename, "%spic_%d.png", data_directory,index);
         produce_art(index, preview_img,
                     preview_img_width, preview_img_height,
+                    source_images, no_of_sources,
                     filename);
         fflush(stdout);
     }

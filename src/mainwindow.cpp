@@ -7,11 +7,13 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     setup();
+    detectSourceImages();
     nextGeneration();
 }
 
 MainWindow::~MainWindow()
 {
+    delete [] source;
     free(full_img);
     delete painter;
     delete ui;
@@ -55,6 +57,8 @@ void MainWindow::setup()
     command = QString(MAKE_DIR) + " " + dataDirectory;
     (void)system(command.toStdString().c_str());
 
+    source = new QImage[MAX_SOURCE_IMAGES];
+
     full_img_width = 800;
     full_img_height = 800;
     full_img = (unsigned char*)malloc(full_img_width*full_img_height*3);
@@ -75,6 +79,8 @@ void MainWindow::setup()
     // Event for detecting mouse click on full image
     ui->graphicsView->installEventFilter(this);
     selected_preview_index = -1;
+    no_of_source_images = 0;
+    reloadSourceImages = true;
 
     // Save the current image
     connect(ui->actionSave,SIGNAL(triggered()),
@@ -82,6 +88,8 @@ void MainWindow::setup()
     // Exit the application
     connect(ui->actionExit,SIGNAL(triggered()),
             this,SLOT(close()));
+    connect(ui->actionLoadImage,SIGNAL(triggered()),
+            this,SLOT(loadSourceImage()));
 
 }
 
@@ -100,7 +108,7 @@ int MainWindow::saveImageAs()
     QString filename =
         QFileDialog::getSaveFileName(this,
             tr("Enter a filename to save as"),
-            QDir::currentPath(),
+            QDir::homePath(),
             tr("PNG Image Files (*.png)"));
 
     // if no filename was given
@@ -109,6 +117,44 @@ int MainWindow::saveImageAs()
     QString command = QString(COPY_FILE) + " " + dataDirectory + QString(PATH_SEPARATOR) + "full.png " + filename;
     retval = system(command.toStdString().c_str());
     QMessageBox::information(this, "Save Image As","Image saved as " + filename);
+    return retval;
+}
+
+// loads a source image
+int MainWindow::loadSourceImage()
+{
+    int retval = 0;
+
+    if (no_of_source_images >= MAX_SOURCE_IMAGES) return 0;
+
+    // get the filename
+    QString filename =
+        QFileDialog::getOpenFileName(this,
+            tr("Enter a filename to load"),
+            QDir::homePath(),
+            tr("PNG Image Files (*.png) | Jpeg Image Files (*.jpg)"));
+
+    // if no filename was given
+    if (filename.length()==0) return -1;
+
+    QString command = QString(COPY_FILE) + " " + filename + " " +
+                dataDirectory + QString(PATH_SEPARATOR) + "image" +
+                QString::number(no_of_source_images);
+    if (filename.toLower().endsWith(".png")) {
+        command += ".png";
+    }
+    if (filename.toLower().endsWith(".jpg")) {
+        command += ".jpg";
+    }
+    if (filename.toLower().endsWith(".gif")) {
+        command += ".gif";
+    }
+    qDebug("filename %s",filename.toStdString().c_str());
+    qDebug("command %s",command.toStdString().c_str());
+    retval = system(command.toStdString().c_str());
+    QMessageBox::information(this, "Load Source Image","Image loaded");
+    no_of_source_images++;
+    reloadSourceImages = true;
     return retval;
 }
 
@@ -143,13 +189,70 @@ void MainWindow::loadPreviewImage(int index)
     }
 }
 
+bool MainWindow::fileExists(QString filename)
+{
+    FILE * fp;
+
+    fp = fopen(filename.toStdString().c_str(),"r");
+    if (fp) {
+        fclose(fp);
+        return true;
+    }
+    return false;
+}
+
+// detect how many source images exist
+void MainWindow::detectSourceImages()
+{
+    no_of_source_images = 0;
+    for (int i = 0; i < MAX_SOURCE_IMAGES; i++) {
+        QString filename = dataDirectory + QString(PATH_SEPARATOR) + "image" +
+                    QString::number(no_of_source_images);
+        if ((fileExists(filename+".png")) ||
+            (fileExists(filename+".jpg")) ||
+            (fileExists(filename+".gif"))) {
+            no_of_source_images = i+1;
+        }
+        else {
+            break;
+        }
+    }
+}
+
+// reload the source images
+void MainWindow::reloadSources()
+{
+    QString filename;
+    bool success;
+
+    reloadSourceImages = false;
+
+    for (int i = 0; i < no_of_source_images; i++) {
+        filename = dataDirectory + QString(PATH_SEPARATOR) + "image" +
+                QString::number(i);
+        success = source[i].load(filename+".png");
+        if (!success) success = source[i].load(filename+".jpg");
+        if (!success) success = source[i].load(filename+".gif");
+        if (success) {
+            qDebug("Image loaded %dx%d", source[i].width(), source[i].height());
+        }
+        else {
+            qDebug("Couldn't load %d %s", i, filename.toStdString().c_str());
+        }
+    }
+}
+
 // produces the next generation of previews
 void MainWindow::nextGeneration()
 {
     QString directory = dataDirectory + QString(PATH_SEPARATOR);
 
+    if (reloadSourceImages) {
+        reloadSources();
+    }
+
     painter->next_generation();
-    painter->produce_population_art((char*)directory.toStdString().c_str());
+    painter->produce_population_art((char*)directory.toStdString().c_str(), source, no_of_source_images);
     for (int index = 0; index < NO_OF_IMAGES; index++) {
         loadPreviewImage(index);
     }
@@ -183,6 +286,7 @@ void MainWindow::selectPreviewImage(int index)
     painter->select_best(index);
     painter->produce_art(index, full_img,
                          full_img_width, full_img_height,
+                         source, no_of_source_images,
                          (char*)full_image_filename.toStdString().c_str());
     loadPreviewImage(NO_OF_IMAGES);
 }

@@ -3,6 +3,8 @@
 
 #include <stdio.h>
 #include <time.h>
+#include <QImage>
+#include <QColor>
 extern "C" {
 #include "libgpr/globals.h"
 #include "libgpr/gprcm.h"
@@ -30,10 +32,12 @@ public:
     float dropout_rate;
     int run_steps;
 
-    void produce_population_art(char * data_directory);
+    void produce_population_art(char * data_directory, QImage * source_images, int no_of_sources);
     void produce_art(int index,
                      unsigned char * img,
                      int img_width, int img_height,
+                     QImage * source_images,
+                     int no_of_sources,
                      char * filename);
     void next_generation();
     void select_best(int index);
