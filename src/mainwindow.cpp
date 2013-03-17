@@ -88,9 +88,12 @@ void MainWindow::setup()
     // Exit the application
     connect(ui->actionExit,SIGNAL(triggered()),
             this,SLOT(close()));
+    // load a source image
     connect(ui->actionLoadImage,SIGNAL(triggered()),
             this,SLOT(loadSourceImage()));
-
+    // clears source images
+    connect(ui->actionClearSources,SIGNAL(triggered()),
+            this,SLOT(clearSourceImages()));
 }
 
 // saves the currently selected image
@@ -146,15 +149,39 @@ int MainWindow::loadSourceImage()
     if (filename.toLower().endsWith(".jpg")) {
         command += ".jpg";
     }
-    if (filename.toLower().endsWith(".gif")) {
-        command += ".gif";
-    }
     qDebug("filename %s",filename.toStdString().c_str());
     qDebug("command %s",command.toStdString().c_str());
     retval = system(command.toStdString().c_str());
     QMessageBox::information(this, "Load Source Image","Image loaded");
     no_of_source_images++;
     reloadSourceImages = true;
+    return retval;
+}
+
+// clears all the source images
+int MainWindow::clearSourceImages()
+{
+    QString filename, command;
+    int retval = 0;
+    bool deleted;
+    QString extensions[] = {
+        ".png", ".jpg"
+    };
+
+    for (int index = 0; index < MAX_SOURCE_IMAGES; index++) {
+        filename =
+            dataDirectory + QString(PATH_SEPARATOR) + "image" +
+            QString::number(index);
+        deleted = false;
+        for (int ext = 0; ext < 2; ext++) {
+            command = QString(DELETE_FILE) + " " + filename + extensions[ext];
+            retval = system(command.toStdString().c_str());
+            if (retval == 0) deleted = true;
+        }
+        if (!deleted) break;
+    }
+    no_of_source_images = 0;
+    QMessageBox::information(this, "Clear source images","All source images have been cleared");
     return retval;
 }
 
@@ -209,8 +236,7 @@ void MainWindow::detectSourceImages()
         QString filename = dataDirectory + QString(PATH_SEPARATOR) + "image" +
                     QString::number(no_of_source_images);
         if ((fileExists(filename+".png")) ||
-            (fileExists(filename+".jpg")) ||
-            (fileExists(filename+".gif"))) {
+            (fileExists(filename+".jpg"))) {
             no_of_source_images = i+1;
         }
         else {
@@ -232,7 +258,6 @@ void MainWindow::reloadSources()
                 QString::number(i);
         success = source[i].load(filename+".png");
         if (!success) success = source[i].load(filename+".jpg");
-        if (!success) success = source[i].load(filename+".gif");
         if (success) {
             qDebug("Image loaded %dx%d", source[i].width(), source[i].height());
         }

@@ -4,17 +4,17 @@ paintatron::paintatron(int population)
 {
     int i;
 
-    sensors = 5, actuators = 6;
+    sensors = 12, actuators = 13;
     this->population = population;
     run_steps = 1;
-    rows = 6;
-    columns = 16;
-    connections_per_gene = 3;
+    rows = 4;
+    columns = 10;
+    connections_per_gene = 6;
     modules = 0;
     chromosomes=1;
-    min_value = -100;
-    max_value = 100;
-    elitism = 1.0f / population;
+    min_value = -1000;
+    max_value = 1000;
+    elitism = 4.0f / population;
     mutation_prob = 0.4f;
     use_crossover = 1;
     dropout_rate = 0.1f;
@@ -30,8 +30,8 @@ paintatron::paintatron(int population)
     }
 
     // create an image used for previews
-    preview_img_width = 128;
-    preview_img_height = 128;
+    preview_img_width = 64;
+    preview_img_height = 64;
     preview_img = (unsigned char*)malloc(preview_img_width*preview_img_height*3*sizeof(unsigned char));
 
     no_of_instructions = gprcm_default_instruction_set((int*)instruction_set);
@@ -72,8 +72,8 @@ void paintatron::produce_art(int index,
                              int no_of_sources,
                              char * filename)
 {
-    int x,y,n=0,itt,c, source_x, source_y, source_index,R,G,B;
-    float offset_x, offset_y;
+    int x,y,x2,y2,n=0,itt,c, source_x, source_y, source_index,R,G,B,R2,G2,B2,actuator_offset,sensor_offset;
+    float offset_x, offset_y, angle, radius;
     gprcm_population * pop = &sys.island[0];
     gprcm_function * f = &pop->individual[index];
 
@@ -86,38 +86,71 @@ void paintatron::produce_art(int index,
     for (y = 0; y < img_height; y++) {
         for (x = 0; x < img_width; x++, n+=3) {
             if (no_of_sources > 0) {
-                /* source image to use */
-                source_index =
-                            (int)(fmod(fabs(gprcm_get_actuator(f, 3,
-                                                                pop->rows,
-                                                                pop->columns,
-                                                                pop->sensors)),1.0f)*no_of_sources);
+                for (itt = 0; itt < 2; itt++) {
+                    actuator_offset = itt*5;
+                    sensor_offset = itt*5;
+                    /* source image to use */
+                    source_index =
+                            (int)(fmod(fabs(gprcm_get_actuator(f, 3+actuator_offset,
+                                                               pop->rows,
+                                                               pop->columns,
+                                                               pop->sensors)),1.0f)*no_of_sources);
 
-                if ((source_images[source_index].width() > 0) &&
-                    (source_images[source_index].height() > 0)) {
+                    if ((source_images[source_index].width() > 0) &&
+                            (source_images[source_index].height() > 0)) {
 
-                    offset_x =
-                        fmod(fabs(gprcm_get_actuator(f, 4,
-                                                     pop->rows,
-                                                     pop->columns,
-                                                     pop->sensors)),2.0f)-1.0f;
-                    offset_y =
-                        fmod(fabs(gprcm_get_actuator(f, 5,
-                                                     pop->rows,
-                                                     pop->columns,
-                                                     pop->sensors)),2.0f)-1.0f;
+                        angle =
+                                fmod(fabs(gprcm_get_actuator(f, 4+actuator_offset,
+                                                             pop->rows,
+                                                             pop->columns,
+                                                             pop->sensors)),1.0f)*2*3.1415927f;
 
-                    source_x = abs(x*(int)(source_images[source_index].width()*offset_x)/img_width) % source_images[source_index].width();
-                    source_y = abs(y*(int)(source_images[source_index].height()*offset_y)/img_height) % source_images[source_index].height();
+                        radius =
+                                fmod(fabs(gprcm_get_actuator(f, 5+actuator_offset,
+                                                             pop->rows,
+                                                             pop->columns,
+                                                             pop->sensors)),1.0f)*img_width;
 
-                    /* get the colour at this location */
-                    QColor col = QColor::fromRgb (source_images[source_index].pixel(source_x,source_y));
-                    col.getRgb(&R,&G,&B);
+                        if (itt==0) {
+                            x2 = x + (int)(radius*sin(angle));
+                            y2 = y + (int)(radius*cos(angle));
+                        }
+                        else {
+                            x2 = (img_width/2) + (int)(radius*sin(angle));
+                            y2 = (img_height/2) + (int)(radius*cos(angle));
+                        }
 
-                    /* set sensors to the colour values */
-                    gprcm_set_sensor(f, 2, R/255.0f);
-                    gprcm_set_sensor(f, 3, G/255.0f);
-                    gprcm_set_sensor(f, 4, B/255.0f);
+                        offset_x =
+                                (fmod(fabs(gprcm_get_actuator(f, 6+actuator_offset,
+                                                              pop->rows,
+                                                              pop->columns,
+                                                              pop->sensors)),1.0f)-0.5f)*4;
+                        offset_y =
+                                (fmod(fabs(gprcm_get_actuator(f, 7+actuator_offset,
+                                                              pop->rows,
+                                                              pop->columns,
+                                                              pop->sensors)),1.0f)-0.5f)*4;
+
+                        source_x = abs(x2*(int)(source_images[source_index].width()*offset_x)/img_width) % source_images[source_index].width();
+                        source_y = abs(y2*(int)(source_images[source_index].height()*offset_y)/img_height) % source_images[source_index].height();
+
+                        /* get the colour at this location */
+                        QColor col = QColor::fromRgb (source_images[source_index].pixel(source_x,source_y));
+                        col.getRgb(&R,&G,&B);
+
+                        /* set sensors to the colour values */
+                        gprcm_set_sensor(f, 2+sensor_offset, R/255.0f);
+                        gprcm_set_sensor(f, 3+sensor_offset, G/255.0f);
+                        gprcm_set_sensor(f, 4+sensor_offset, B/255.0f);
+
+                        col = QColor::fromRgb (source_images[source_index].pixel((source_x+5) % source_images[source_index].width(),source_y));
+                        col.getRgb(&R2,&G2,&B2);
+                        gprcm_set_sensor(f, 5+sensor_offset, (abs(R-R2) + abs(G-G2) + abs(B-B2))/255.0f);
+                        col = QColor::fromRgb (source_images[source_index].pixel(source_x,(source_y+5) % source_images[source_index].height()));
+                        col.getRgb(&R2,&G2,&B2);
+                        gprcm_set_sensor(f, 6+sensor_offset, (abs(R-R2) + abs(G-G2) + abs(B-B2))/255.0f);
+
+                    }
                 }
             }
 
@@ -171,8 +204,13 @@ void paintatron::select_best(int index)
 
     for (i = 0; i < population; i++) {
         if (i != index) {
-            (&sys.island[0])->fitness[i] =
-                rand_num(&random_seed)%10000/100000.0f;
+            if ((&sys.island[0])->fitness[i] > 20) {
+                (&sys.island[0])->fitness[i] /= 2;
+            }
+            else {
+                (&sys.island[0])->fitness[i] =
+                    rand_num(&random_seed)%10000/100000.0f;
+            }
         }
         else {
             (&sys.island[0])->fitness[i] = 99;

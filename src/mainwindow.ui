@@ -209,7 +209,14 @@
     <addaction name="actionLoadImage"/>
     <addaction name="actionExit"/>
    </widget>
+   <widget class="QMenu" name="menuEdit">
+    <property name="title">
+     <string>Edit</string>
+    </property>
+    <addaction name="actionClearSources"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuEdit"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -238,6 +245,11 @@
   <action name="actionLoadImage">
    <property name="text">
     <string>Load Source Image</string>
+   </property>
+  </action>
+  <action name="actionClearSources">
+   <property name="text">
+    <string>Clear Image Sources</string>
    </property>
   </action>
  </widget>

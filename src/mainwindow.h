@@ -14,6 +14,7 @@
 #define PATH_SEPARATOR  "/"
 #define MAKE_DIR        "mkdir"
 #define COPY_FILE       "cp"
+#define DELETE_FILE     "rm -f"
 
 #define NO_OF_IMAGES      16
 #define MAX_SOURCE_IMAGES 128
@@ -49,6 +50,7 @@ private:
 public slots:
     int saveImageAs();
     int loadSourceImage();
+    int clearSourceImages();
 
 public:
     QImage * source;
