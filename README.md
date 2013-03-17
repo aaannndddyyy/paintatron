@@ -1,6 +1,8 @@
 paintatron
 ==========
 
+<img src="http://sluggish.dyndns.org/images/1/1f/Gargoyle.jpg"/>
+
 Paintatron can be used to generate collage artworks based upon a set of source images. The user repeatedly selects the most aesthetic images from which the next generation of images are produced.
 
 This is a GUI application which uses Qt version 4.8 or later, so you won't be able to use it on the command line.
