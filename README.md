@@ -1,7 +1,7 @@
 paintatron
 ==========
 
-<img src="http://sluggish.dyndns.org/images/1/1f/Gargoyle.jpg"/>
+<img src="https://github.com/fuzzgun/paintatron/blob/master/images/example.jpg"/>
 
 Paintatron can be used to generate collage artworks based upon a set of source images. The user repeatedly selects the most aesthetic images from which the next generation of images are produced.
 
