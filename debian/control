@@ -1,0 +1,17 @@
+Source: paintatron
+Section: contrib/utils
+Priority: extra
+Maintainer: Bob Mottram <bob@sluggish.dyndns.org>
+Build-Depends: debhelper (>= 8.0.0), libqt4-dev, qt4-qmake, libgpr0
+Standards-Version: 3.9.2
+Homepage: https://github.com/fuzzgun/paintatron
+Vcs-Browser: https://github.com/fuzzgun/paintatron
+Vcs-Git: https://github.com/fuzzgun/paintatron.git
+
+Package: paintatron
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, gnuplot, libqtcore4, libqtgui4, libqt4-xml, libqt4-script, libgpr0
+Description: Generates artworks using genetic programming
+ Paintatron can be used to generate artworks based upon a set of source
+ images.  The user repeatedly selects the most aesthetic images from which
+ the next generation of images are produced.

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Paintatron
+GenericName=paintatron
+Comment=Generates artwork using genetic programming
+Exec=paintatron %U
+Icon=paintatron
+Terminal=false
+Categories=Utility;Game;
