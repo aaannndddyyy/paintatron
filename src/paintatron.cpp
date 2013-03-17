@@ -23,7 +23,7 @@ paintatron::paintatron(int population)
 {
     int i;
 
-    sensors = 12, actuators = 13;
+    sensors = 14, actuators = 13;
     this->population = population;
     run_steps = 1;
     rows = 4;
@@ -93,6 +93,8 @@ void paintatron::produce_art(int index,
 {
     int x,y,x2,y2,n=0,itt,c, source_x, source_y, source_index,R,G,B,R2,G2,B2,actuator_offset,sensor_offset;
     float offset_x, offset_y, angle, radius;
+    int cx = img_width/2;
+    int cy = img_height/2;
     gprcm_population * pop = &sys.island[0];
     gprcm_function * f = &pop->individual[index];
 
@@ -158,16 +160,16 @@ void paintatron::produce_art(int index,
                         col.getRgb(&R,&G,&B);
 
                         /* set sensors to the colour values */
-                        gprcm_set_sensor(f, 2+sensor_offset, R/255.0f);
-                        gprcm_set_sensor(f, 3+sensor_offset, G/255.0f);
-                        gprcm_set_sensor(f, 4+sensor_offset, B/255.0f);
+                        gprcm_set_sensor(f, 4+sensor_offset, R/255.0f);
+                        gprcm_set_sensor(f, 5+sensor_offset, G/255.0f);
+                        gprcm_set_sensor(f, 6+sensor_offset, B/255.0f);
 
                         col = QColor::fromRgb (source_images[source_index].pixel((source_x+5) % source_images[source_index].width(),source_y));
                         col.getRgb(&R2,&G2,&B2);
-                        gprcm_set_sensor(f, 5+sensor_offset, (abs(R-R2) + abs(G-G2) + abs(B-B2))/255.0f);
+                        gprcm_set_sensor(f, 7+sensor_offset, (abs(R-R2) + abs(G-G2) + abs(B-B2))/255.0f);
                         col = QColor::fromRgb (source_images[source_index].pixel(source_x,(source_y+5) % source_images[source_index].height()));
                         col.getRgb(&R2,&G2,&B2);
-                        gprcm_set_sensor(f, 6+sensor_offset, (abs(R-R2) + abs(G-G2) + abs(B-B2))/255.0f);
+                        gprcm_set_sensor(f, 8+sensor_offset, (abs(R-R2) + abs(G-G2) + abs(B-B2))/255.0f);
 
                     }
                 }
@@ -175,10 +177,16 @@ void paintatron::produce_art(int index,
 
 
             gprcm_set_sensor(f, 0,
-                             (x*2/(float)img_width)-0.5f);
+                             (x*2/(float)img_width)-1.0f);
 
             gprcm_set_sensor(f, 1,
-                             (y*2/(float)img_height)-0.5f);
+                             (y*2/(float)img_height)-1.0f);
+
+            gprcm_set_sensor(f, 2,
+                             n/(float)(img_width*img_height*3));
+
+            gprcm_set_sensor(f, 3,
+                             (float)sqrt(((x-cx)*(x-cx)) + ((y-cy)*(y-cy)))/img_width);
 
             for (itt = 0; itt < run_steps; itt++) {
                 /* run the program */
