@@ -118,28 +118,10 @@ void MainWindow::setup()
 // saves the currently selected image
 int MainWindow::saveImageAs()
 {
-    int retval = 0;
-
-    // if no image is showing
-    if (selected_preview_index == -1) {
-        QMessageBox::information(this, "Save Image As","You must first select one of the small preview images");
-        return -1;
-    }
-
-    // get the filename
-    QString filename =
-        QFileDialog::getSaveFileName(this,
-            tr("Enter a filename to save as"),
-            QDir::homePath(),
-            tr("PNG Image Files (*.png)"));
-
-    // if no filename was given
-    if (filename.length()==0) return -1;
-
-    QString command = QString(COPY_FILE) + " " + dataDirectory + QString(PATH_SEPARATOR) + "full.png " + filename;
-    retval = system(command.toStdString().c_str());
-    QMessageBox::information(this, "Save Image As","Image saved as " + filename);
-    return retval;
+    DialogSaveImage * save = new DialogSaveImage(this,selected_preview_index,painter,source,no_of_source_images);
+    save->exec();
+    delete save;
+    return 0;
 }
 
 // loads a source image

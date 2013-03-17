@@ -16,9 +16,12 @@ LIBS += -L/usr/lib -lgpr -lm -lz -fopenmp
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    paintatron.cpp
+    paintatron.cpp \
+    dialogsaveimage.cpp
 
 HEADERS  += mainwindow.h \
-    paintatron.h
+    paintatron.h \
+    dialogsaveimage.h
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    dialogsaveimage.ui

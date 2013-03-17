@@ -29,6 +29,7 @@
 #include <QMessageBox>
 #include <QFileDialog>
 #include "paintatron.h"
+#include "dialogsaveimage.h"
 
 #define PATH_SEPARATOR  "/"
 #define MAKE_DIR        "mkdir"
