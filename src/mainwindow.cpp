@@ -147,7 +147,7 @@ int MainWindow::loadSourceImage()
         QFileDialog::getOpenFileName(this,
             tr("Enter a filename to load"),
             QDir::homePath(),
-            tr("PNG Image Files (*.png) | Jpeg Image Files (*.jpg)"));
+            tr("Images (*.png *.jpg)"));
 
     // if no filename was given
     if (filename.length()==0) return -1;
