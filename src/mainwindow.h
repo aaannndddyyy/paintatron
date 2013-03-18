@@ -30,6 +30,7 @@
 #include <QFileDialog>
 #include "paintatron.h"
 #include "dialogsaveimage.h"
+#include "dialogabout.h"
 
 #define PATH_SEPARATOR  "/"
 #define MAKE_DIR        "mkdir"
@@ -71,6 +72,7 @@ public slots:
     int saveImageAs();
     int loadSourceImage();
     int clearSourceImages();
+    void openAbout();
 
 public:
     QImage * source;

@@ -113,6 +113,16 @@ void MainWindow::setup()
     // clears source images
     connect(ui->actionClearSources,SIGNAL(triggered()),
             this,SLOT(clearSourceImages()));
+    // open the about dialog
+    connect(ui->actionAbout,SIGNAL(triggered()),this,SLOT(openAbout()));
+}
+
+// show the about dialog
+void MainWindow::openAbout()
+{
+    DialogAbout * about = new DialogAbout(this);
+    about->exec();
+    delete about;
 }
 
 // saves the currently selected image
