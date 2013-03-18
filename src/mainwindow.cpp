@@ -27,6 +27,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     setup();
     detectSourceImages();
+    this->show();
     nextGeneration();
 }
 
