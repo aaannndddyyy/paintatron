@@ -79,8 +79,8 @@ void MainWindow::setup()
 
     source = new QImage[MAX_SOURCE_IMAGES];
 
-    full_img_width = 800;
-    full_img_height = 800;
+    full_img_width = 400;
+    full_img_height = 400;
     full_img = (unsigned char*)malloc(full_img_width*full_img_height*3);
 
     for (int index = 0; index < NO_OF_IMAGES; index++) {
