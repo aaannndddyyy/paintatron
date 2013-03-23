@@ -180,7 +180,7 @@ int MainWindow::clearSourceImages()
         ".png", ".jpg"
     };
 
-    for (int index = 0; index < MAX_SOURCE_IMAGES; index++) {
+    for (int index = 0; index < no_of_source_images; index++) {
         filename =
             dataDirectory + QString(PATH_SEPARATOR) + "image" +
             QString::number(index);
