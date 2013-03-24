@@ -51,12 +51,16 @@ public:
     float dropout_rate;
     int run_steps;
 
-    void produce_population_art(char * data_directory, QImage * source_images, int no_of_sources);
+    void produce_population_art(char * data_directory,
+                                QImage * source_images, int no_of_source_images,
+                                QString * source_texts, int no_of_source_texts);
     void produce_art(int index,
                      unsigned char * img,
                      int img_width, int img_height,
                      QImage * source_images,
-                     int no_of_sources,
+                     int no_of_source_images,
+                     QString * source_texts,
+                     int no_of_source_texts,
                      char * filename);
     void next_generation();
     void select_best(int index);

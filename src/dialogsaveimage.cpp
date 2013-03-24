@@ -4,16 +4,20 @@
 DialogSaveImage::DialogSaveImage(QWidget *parent,
                                  int selected_index,
                                  paintatron * painter,
-                                 QImage * source,
-                                 int no_of_source_images) :
+                                 QImage * source_image,
+                                 int no_of_source_images,
+                                 QString * source_text,
+                                 int no_of_source_texts) :
     QDialog(parent),
     ui(new Ui::DialogSaveImage)
 {
     ui->setupUi(this);
     this->selected_index = selected_index;
     this->painter = painter;
-    this->source = source;
+    this->source_image = source_image;
+    this->source_text = source_text;
     this->no_of_source_images = no_of_source_images;
+    this->no_of_source_texts = no_of_source_texts;
     ui->spinBoxWidth->setValue(800);
     ui->spinBoxHeight->setValue(800);
     ui->lineEditFilename->setText("");
@@ -58,7 +62,8 @@ void DialogSaveImage::accept()
     painter->produce_art(selected_index, img,
                          ui->spinBoxWidth->value(),
                          ui->spinBoxHeight->value(),
-                         source, no_of_source_images,
+                         source_image, no_of_source_images,
+                         source_text, no_of_source_texts,
                          (char*)ui->lineEditFilename->text().toStdString().c_str());
     free(img);
     this->close();

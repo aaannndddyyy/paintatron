@@ -39,6 +39,7 @@
 
 #define NO_OF_IMAGES      16
 #define MAX_SOURCE_IMAGES 128
+#define MAX_SOURCE_TEXTS  128
 
 namespace Ui {
 class MainWindow;
@@ -57,13 +58,17 @@ private:
     int selected_preview_index;
     QString dataDirectory;
     int no_of_source_images;
+    int no_of_source_texts;
     bool reloadSourceImages;
+    bool reloadSourceTexts;
 
     bool eventFilter(QObject *obj, QEvent *event);
     void selectPreviewImage(int index);
     void reloadSources();
     void detectSourceImages();
+    void detectSourceTexts();
     bool fileExists(QString filename);
+    bool loadText(QString filename, int index);
 
     unsigned char * full_img;
     int full_img_width, full_img_height;
@@ -71,11 +76,15 @@ private:
 public slots:
     int saveImageAs();
     int loadSourceImage();
+    int loadSourceText();
     int clearSourceImages();
+    int clearSourceTexts();
+    int clearSources();
     void openAbout();
 
 public:
-    QImage * source;
+    QImage * source_image;
+    QString * source_text;
     QImage image[NO_OF_IMAGES+1];
     QGraphicsPixmapItem * image_item[NO_OF_IMAGES+1];
     QGraphicsScene * image_scene[NO_OF_IMAGES+1];

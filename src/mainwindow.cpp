@@ -27,13 +27,15 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     setup();
     detectSourceImages();
+    detectSourceTexts();
     this->show();
     nextGeneration();
 }
 
 MainWindow::~MainWindow()
 {
-    delete [] source;
+    delete [] source_image;
+    delete [] source_text;
     free(full_img);
     delete painter;
     delete ui;
@@ -77,10 +79,11 @@ void MainWindow::setup()
     command = QString(MAKE_DIR) + " " + dataDirectory;
     (void)system(command.toStdString().c_str());
 
-    source = new QImage[MAX_SOURCE_IMAGES];
+    source_image = new QImage[MAX_SOURCE_IMAGES];
+    source_text = new QString[MAX_SOURCE_TEXTS];
 
-    full_img_width = 400;
-    full_img_height = 400;
+    full_img_width = 256;
+    full_img_height = 256;
     full_img = (unsigned char*)malloc(full_img_width*full_img_height*3);
 
     for (int index = 0; index < NO_OF_IMAGES; index++) {
@@ -100,7 +103,9 @@ void MainWindow::setup()
     ui->graphicsView->installEventFilter(this);
     selected_preview_index = -1;
     no_of_source_images = 0;
+    no_of_source_texts = 0;
     reloadSourceImages = true;
+    reloadSourceTexts = true;
 
     // Save the current image
     connect(ui->actionSave,SIGNAL(triggered()),
@@ -111,9 +116,12 @@ void MainWindow::setup()
     // load a source image
     connect(ui->actionLoadImage,SIGNAL(triggered()),
             this,SLOT(loadSourceImage()));
-    // clears source images
+    // load a source text
+    connect(ui->actionLoadText,SIGNAL(triggered()),
+            this,SLOT(loadSourceText()));
+    // clears sources
     connect(ui->actionClearSources,SIGNAL(triggered()),
-            this,SLOT(clearSourceImages()));
+            this,SLOT(clearSources()));
     // open the about dialog
     connect(ui->actionAbout,SIGNAL(triggered()),this,SLOT(openAbout()));
 }
@@ -129,7 +137,9 @@ void MainWindow::openAbout()
 // saves the currently selected image
 int MainWindow::saveImageAs()
 {
-    DialogSaveImage * save = new DialogSaveImage(this,selected_preview_index,painter,source,no_of_source_images);
+    DialogSaveImage * save = new DialogSaveImage(this,selected_preview_index,painter,
+                                                 source_image,no_of_source_images,
+                                                 source_text,no_of_source_texts);
     save->exec();
     delete save;
     return 0;
@@ -170,6 +180,49 @@ int MainWindow::loadSourceImage()
     return retval;
 }
 
+// loads a source text
+int MainWindow::loadSourceText()
+{
+    int retval = 0;
+
+    if (no_of_source_texts >= MAX_SOURCE_TEXTS) return 0;
+
+    // get the filename
+    QString filename =
+        QFileDialog::getOpenFileName(this,
+            tr("Enter a filename to load"),
+            QDir::homePath(),
+            tr("Plain text files (*.txt)"));
+
+    // if no filename was given
+    if (filename.length()==0) return -1;
+
+    QString command = QString(COPY_FILE) + " " + filename + " " +
+                dataDirectory + QString(PATH_SEPARATOR) + "text" +
+                QString::number(no_of_source_texts);
+    if (filename.toLower().endsWith(".txt")) {
+        command += ".txt";
+    }
+    qDebug("filename %s",filename.toStdString().c_str());
+    qDebug("command %s",command.toStdString().c_str());
+    retval = system(command.toStdString().c_str());
+    QMessageBox::information(this, "Load Source Text","Text loaded");
+    no_of_source_texts++;
+    reloadSourceTexts = true;
+    return retval;
+}
+
+// clears all data sources
+int MainWindow::clearSources()
+{
+    int retval = clearSourceImages();
+    retval = clearSourceTexts();
+
+    QMessageBox::information(this, "Clear Sources","All source data has been cleared");
+
+    return retval;
+}
+
 // clears all the source images
 int MainWindow::clearSourceImages()
 {
@@ -193,7 +246,32 @@ int MainWindow::clearSourceImages()
         if (!deleted) break;
     }
     no_of_source_images = 0;
-    QMessageBox::information(this, "Clear source images","All source images have been cleared");
+    return retval;
+}
+
+// clears all the source texts
+int MainWindow::clearSourceTexts()
+{
+    QString filename, command;
+    int retval = 0;
+    bool deleted;
+    QString extensions[] = {
+        ".txt"
+    };
+
+    for (int index = 0; index < no_of_source_texts; index++) {
+        filename =
+            dataDirectory + QString(PATH_SEPARATOR) + "text" +
+            QString::number(index);
+        deleted = false;
+        for (int ext = 0; ext < 1; ext++) {
+            command = QString(DELETE_FILE) + " " + filename + extensions[ext];
+            retval = system(command.toStdString().c_str());
+            if (retval == 0) deleted = true;
+        }
+        if (!deleted) break;
+    }
+    no_of_source_texts = 0;
     return retval;
 }
 
@@ -257,6 +335,51 @@ void MainWindow::detectSourceImages()
     }
 }
 
+// detect how many source texts exist
+void MainWindow::detectSourceTexts()
+{
+    no_of_source_texts = 0;
+    for (int i = 0; i < MAX_SOURCE_TEXTS; i++) {
+        QString filename = dataDirectory + QString(PATH_SEPARATOR) + "text" +
+                    QString::number(no_of_source_texts);
+        if (fileExists(filename+".txt")) {
+            no_of_source_texts = i+1;
+        }
+        else {
+            break;
+        }
+    }
+}
+
+bool MainWindow::loadText(QString filename, int index)
+{
+    FILE * fp;
+    char linestr[256];
+    int i=0;
+
+    source_text[i] = "";
+
+    fp = fopen(filename.toStdString().c_str(),"r");
+    if (!fp) return false;
+    while (!feof(fp)) {
+        if (fgets(linestr , 255 , fp) != NULL) {
+            if (linestr != NULL) {
+                for (i = 0; i < (int)strlen(linestr); i++) {
+                    if (((linestr[i]>='A') && (linestr[i]<='Z')) ||
+                        ((linestr[i]>='a') && (linestr[i]<='z')) ||
+                        (linestr[i]=='.') || (linestr[i]==' ') ||
+                        (linestr[i]=='!') || (linestr[i]=='?') ||
+                        (linestr[i]==',')) {
+                        source_text[index] += linestr[i];
+                    }
+                }
+            }
+        }
+    }
+    fclose(fp);
+    return true;
+}
+
 // reload the source images
 void MainWindow::reloadSources()
 {
@@ -264,14 +387,27 @@ void MainWindow::reloadSources()
     bool success;
 
     reloadSourceImages = false;
+    reloadSourceTexts = false;
 
     for (int i = 0; i < no_of_source_images; i++) {
         filename = dataDirectory + QString(PATH_SEPARATOR) + "image" +
                 QString::number(i);
-        success = source[i].load(filename+".png");
-        if (!success) success = source[i].load(filename+".jpg");
+        success = source_image[i].load(filename+".png");
+        if (!success) success = source_image[i].load(filename+".jpg");
         if (success) {
-            qDebug("Image loaded %dx%d", source[i].width(), source[i].height());
+            qDebug("Image loaded %dx%d", source_image[i].width(), source_image[i].height());
+        }
+        else {
+            qDebug("Couldn't load %d %s", i, filename.toStdString().c_str());
+        }
+    }
+
+    for (int i = 0; i < no_of_source_texts; i++) {
+        filename = dataDirectory + QString(PATH_SEPARATOR) + "text" +
+                QString::number(i);
+        success = loadText(filename+".txt", i);
+        if (success) {
+            qDebug("Text loaded");
         }
         else {
             qDebug("Couldn't load %d %s", i, filename.toStdString().c_str());
@@ -284,12 +420,14 @@ void MainWindow::nextGeneration()
 {
     QString directory = dataDirectory + QString(PATH_SEPARATOR);
 
-    if (reloadSourceImages) {
+    if ((reloadSourceImages) || (reloadSourceTexts)) {
         reloadSources();
     }
 
     painter->next_generation();
-    painter->produce_population_art((char*)directory.toStdString().c_str(), source, no_of_source_images);
+    painter->produce_population_art((char*)directory.toStdString().c_str(),
+                                    source_image, no_of_source_images,
+                                    source_text, no_of_source_texts);
     for (int index = 0; index < NO_OF_IMAGES; index++) {
         loadPreviewImage(index);
     }
@@ -323,7 +461,8 @@ void MainWindow::selectPreviewImage(int index)
     painter->select_best(index);
     painter->produce_art(index, full_img,
                          full_img_width, full_img_height,
-                         source, no_of_source_images,
+                         source_image, no_of_source_images,
+                         source_text, no_of_source_texts,
                          (char*)full_image_filename.toStdString().c_str());
     loadPreviewImage(NO_OF_IMAGES);
 }
