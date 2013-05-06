@@ -49,7 +49,7 @@ public:
     unsigned char * preview_img;
     int preview_img_width, preview_img_height;
     float dropout_rate;
-    int run_steps;
+    int run_steps, data_size, data_fields;
 
     void produce_population_art(char * data_directory,
                                 QImage * source_images, int no_of_source_images,

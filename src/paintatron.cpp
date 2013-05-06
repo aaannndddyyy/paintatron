@@ -39,6 +39,8 @@ paintatron::paintatron(int population)
     dropout_rate = 0.1f;
     random_seed = (unsigned int)time(NULL);
     integers_only = 0;
+    data_size=5;
+    data_fields=1;
     sensor_names = (char**)malloc(sensors*sizeof(char*));
     for (i = 0; i < sensors; i++) {
         sensor_names[i] = (char*)malloc(32*sizeof(char));
@@ -64,7 +66,9 @@ paintatron::paintatron(int population)
                       modules,
                       chromosomes,
                       min_value, max_value,
-                      integers_only, &random_seed,
+                      integers_only,
+                      data_size, data_fields,
+                      &random_seed,
                       instruction_set, no_of_instructions);
 }
 
