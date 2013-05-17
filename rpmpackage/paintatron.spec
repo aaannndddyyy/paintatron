@@ -14,7 +14,7 @@ License: GPL
 Group: Utilities
 SOURCE0 : %{name}-%{version}.tar.gz
 URL: https://github.com/fuzzgun/paintatron
-Packager: Bob Mottram <bob@sluggish.dyndns.org>
+Packager: Bob Mottram <bob@robotics.uk.to>
 Requires: gnuplot, libpng, qt4, libgpr
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 
@@ -48,6 +48,6 @@ rm -rf %{buildroot}
 %attr(644,root,root) /usr/share/pixmaps/%{name}.svg
 
 %changelog
-* Sun Mar 17 2013  Bob Mottram <bob@sluggish.dyndns.org> 0.2-1
+* Sun Mar 17 2013  Bob Mottram <bob@robotics.uk.to> 0.2-1
 - Spec file created
 

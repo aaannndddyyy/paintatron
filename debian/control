@@ -1,7 +1,7 @@
 Source: paintatron
 Section: contrib/utils
 Priority: extra
-Maintainer: Bob Mottram <bob@sluggish.dyndns.org>
+Maintainer: Bob Mottram <bob@robotics.uk.to>
 Build-Depends: debhelper (>= 8.0.0), libqt4-dev (>= 4.8.0), qt4-qmake (>= 4.8.0), libgpr0 (>= 1.0.3), libgpr0-dev (>= 1.0.3)
 Standards-Version: 3.9.2
 Homepage: https://github.com/fuzzgun/paintatron
