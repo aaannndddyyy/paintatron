@@ -1,5 +1,6 @@
 APP=paintatron
 VERSION=1.00
+CURDIR := $(shell pwd)
 
 # Build hardening flags
 CPPFLAGS:=$(shell dpkg-buildflags --get CPPFLAGS)
@@ -7,12 +8,15 @@ CFLAGS:=$(shell dpkg-buildflags --get CFLAGS)
 CXXFLAGS:=$(shell dpkg-buildflags --get CXXFLAGS)
 LDFLAGS:=$(shell dpkg-buildflags --get LDFLAGS)
 
-GUI_DIR=build
+GUI_DIR := $(CURDIR)/build
+$(shell [ -d "$(GUI_DIR)" ] || mkdir -p $(GUI_DIR))
 
 all:
+	qmake ${CURDIR}/src/${APP}.pro -o ${GUI_DIR}/Makefile
 	$(MAKE) -C $(GUI_DIR)
 
 debug:
+	qmake ${CURDIR}/src/${APP}.pro -o ${GUI_DIR}/Makefile
 	$(MAKE) -C $(GUI_DIR)/ debug
 
 source:
