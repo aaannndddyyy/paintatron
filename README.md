@@ -19,4 +19,4 @@ If you want to use a different set of source images then clear the existing imag
 Packaging
 ---------
 
-In order to create a package for a Debian based system first ensure that the code is within a directory called paintertron-x.xx where the x's are the version number, and that you have the libgpr0 and libgpr0-dev packages installed (see https://launchpad.net/libgpr), then run the debian.sh script.  You will need to make sure that Qt packages are installed and the easiest way to do this is just to install Qt Creator.
+In order to create a package for a Debian based system first ensure that the code is within a directory called paintertron-x.xx where the x's are the version number, and that you have the libgpr0 and libgpr0-dev packages installed (see https://github.com/bashrc/libgpr), then run the debian.sh script.  You will need to make sure that Qt packages are installed and the easiest way to do this is just to install Qt Creator.

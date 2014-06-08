@@ -11,12 +11,20 @@ LDFLAGS:=$(shell dpkg-buildflags --get LDFLAGS)
 GUI_DIR := $(CURDIR)/build
 $(shell [ -d "$(GUI_DIR)" ] || mkdir -p $(GUI_DIR))
 
+LIBDIR=lib
+MACHINE := $(shell uname -m)
+ifeq ($(MACHINE), x86_64)
+LIBDIR = lib64
+endif
+
+QMAKE=/usr/${LIBDIR}/qt4/bin/qmake
+
 all:
-	qmake ${CURDIR}/src/${APP}.pro -o ${GUI_DIR}/Makefile
+	${QMAKE} ${CURDIR}/src/${APP}.pro -o ${GUI_DIR}/Makefile
 	$(MAKE) -C $(GUI_DIR)
 
 debug:
-	qmake ${CURDIR}/src/${APP}.pro -o ${GUI_DIR}/Makefile
+	${QMAKE} ${CURDIR}/src/${APP}.pro -o ${GUI_DIR}/Makefile
 	$(MAKE) -C $(GUI_DIR)/ debug
 
 source:
