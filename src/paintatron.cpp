@@ -98,7 +98,7 @@ void paintatron::produce_art(int index,
                              char * filename)
 {
     int x,y,x2,y2,n=0,itt,c, source_x, source_y, source_index,R,G,B,R2,G2,B2,actuator_offset,sensor_offset;
-    int source_char_index;
+    int source_char_index, max_itt;
     float scale_x, scale_y, angle, radius, radius_scale=img_width;
     int centre_x, cx = img_width/2;
     int centre_y, cy = img_height/2;
@@ -125,7 +125,15 @@ void paintatron::produce_art(int index,
     for (y = 0; y < img_height; y++) {
         for (x = 0; x < img_width; x++, n+=3) {
             if (no_of_source_images > 0) {
-                for (itt = 0; itt < image_itterations; itt++) {
+
+                /* number of itterations at this pixel */
+                max_itt = 1 +
+                        (int)(fmod(fabs(gprcm_get_actuator(f, initial_actuator+1+actuator_offset,
+                            pop->rows,
+                            pop->columns,
+                            pop->sensors)),1.0f)*image_itterations);
+
+                for (itt = 0; itt < max_itt; itt++) {
                     actuator_offset = itt*actuator_image_inputs;
                     sensor_offset = itt*sensor_image_inputs;
                     /* source image to use */
