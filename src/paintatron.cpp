@@ -97,11 +97,11 @@ void paintatron::produce_art(int index,
                              int no_of_source_texts,
                              char * filename)
 {
-    int x,y,x2,y2,n=0,itt,c, source_x, source_y, source_index,R,G,B,R2,G2,B2,actuator_offset,sensor_offset;
+    int x,y,x2,y2,n=0,itt,c, source_x, source_y, source_index,R,G,B,R2,G2,B2,actuator_offset=0,sensor_offset;
     int source_char_index, max_itt;
     float scale_x, scale_y, angle, radius, radius_scale=img_width;
-    int centre_x, cx = img_width/2;
-    int centre_y, cy = img_height/2;
+    int centre_x=img_width/2, cx = img_width/2;
+    int centre_y=img_height/2, cy = img_height/2;
     const int image_itterations = 3;
     const int initial_actuator = 6;
     const int actuator_image_inputs = 5;
@@ -128,46 +128,49 @@ void paintatron::produce_art(int index,
 
                 /* number of itterations at this pixel */
                 max_itt = 1 +
-                        (int)(fmod(fabs(gprcm_get_actuator(f, initial_actuator+1+actuator_offset,
-                            pop->rows,
-                            pop->columns,
-                            pop->sensors)),1.0f)*image_itterations);
+                    (int)(fmod(fabs(gprcm_get_actuator(f, initial_actuator+1+actuator_offset,
+                                                       pop->rows,
+                                                       pop->columns,
+                                                       pop->sensors)),1.0f)*image_itterations);
 
                 for (itt = 0; itt < max_itt; itt++) {
                     actuator_offset = itt*actuator_image_inputs;
                     sensor_offset = itt*sensor_image_inputs;
                     /* source image to use */
-                    source_index =
-                            (int)(fmod(fabs(gprcm_get_actuator(f, initial_actuator+actuator_offset,
-                                                               pop->rows,
-                                                               pop->columns,
-                                                               pop->sensors)),1.0f)*no_of_source_images);
+                    source_index = itt%no_of_source_images;
+                    /*
+                      source_index =
+                      (int)(fmod(fabs(gprcm_get_actuator(f, initial_actuator+actuator_offset,
+                      pop->rows,
+                      pop->columns,
+                      pop->sensors)),1.0f)*no_of_source_images);
+                    */
 
                     if ((source_images[source_index].width() > 0) &&
-                            (source_images[source_index].height() > 0)) {
+                        (source_images[source_index].height() > 0)) {
 
                         angle =
-                                fmod(fabs(gprcm_get_actuator(f, initial_actuator+1+actuator_offset,
-                                                             pop->rows,
-                                                             pop->columns,
-                                                             pop->sensors)),1.0f)*2*3.1415927f;
+                            fmod(fabs(gprcm_get_actuator(f, initial_actuator+1+actuator_offset,
+                                                         pop->rows,
+                                                         pop->columns,
+                                                         pop->sensors)),1.0f)*2*3.1415927f;
 
                         radius =
-                                fmod(fabs(gprcm_get_actuator(f, initial_actuator+2+actuator_offset,
-                                                             pop->rows,
-                                                             pop->columns,
-                                                             pop->sensors)),1.0f)*radius_scale;
+                            fmod(fabs(gprcm_get_actuator(f, initial_actuator+2+actuator_offset,
+                                                         pop->rows,
+                                                         pop->columns,
+                                                         pop->sensors)),1.0f)*radius_scale;
 
                         scale_x =
-                                ((fmod(fabs(gprcm_get_actuator(f, initial_actuator+3+actuator_offset,
-                                                              pop->rows,
-                                                              pop->columns,
-                                                              pop->sensors)),1.0f)-0.5f)*4);
+                            ((fmod(fabs(gprcm_get_actuator(f, initial_actuator+3+actuator_offset,
+                                                           pop->rows,
+                                                           pop->columns,
+                                                           pop->sensors)),1.0f)-0.5f)*4);
                         scale_y =
-                                ((fmod(fabs(gprcm_get_actuator(f, initial_actuator+4+actuator_offset,
-                                                              pop->rows,
-                                                              pop->columns,
-                                                              pop->sensors)),1.0f)-0.5f)*4);
+                            ((fmod(fabs(gprcm_get_actuator(f, initial_actuator+4+actuator_offset,
+                                                           pop->rows,
+                                                           pop->columns,
+                                                           pop->sensors)),1.0f)-0.5f)*4);
 
                         if (itt==0) {
                             x2 = x + (int)(radius*sin(angle));
@@ -214,15 +217,15 @@ void paintatron::produce_art(int index,
                 actuator_offset = image_itterations*actuator_image_inputs;
 
                 source_index =
-                        (int)(fmod(fabs(gprcm_get_actuator(f, initial_actuator+actuator_offset,
-                                                           pop->rows,
-                                                           pop->columns,
-                                                           pop->sensors)),1.0f)*no_of_source_texts);
+                    (int)(fmod(fabs(gprcm_get_actuator(f, initial_actuator+actuator_offset,
+                                                       pop->rows,
+                                                       pop->columns,
+                                                       pop->sensors)),1.0f)*no_of_source_texts);
                 source_char_index =
-                        (int)(fmod(fabs(gprcm_get_actuator(f, initial_actuator+1+actuator_offset,
-                                                           pop->rows,
-                                                           pop->columns,
-                                                           pop->sensors)),1.0f)*(source_texts[source_index].length()-1));
+                    (int)(fmod(fabs(gprcm_get_actuator(f, initial_actuator+1+actuator_offset,
+                                                       pop->rows,
+                                                       pop->columns,
+                                                       pop->sensors)),1.0f)*(source_texts[source_index].length()-1));
                 gprcm_set_sensor(f, 10+sensor_offset, texts[source_index][source_char_index]/128.0f);
             }
 
